@@ -16,19 +16,43 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit as st
 plt.style.use("ggplot")
+import requests as rq
+from io import BytesIO
 
 
-# ## 2. Load Dataset "main_data.xlsx"
+# ## 2. Load Dataset "main_data.xlsx" dari Github
 
 # In[2]:
 
 
-# Load file dataset yang sebelumnya telah di-export ke dalam format file Comma Separated Value (.CSV)
-df_dashboard = pd.read_excel("main_data.xlsx")
-df_dashboard.tail(4)
+"""
+Load file dataset yang sebelumnya telah di-export pada notebook pertama dan telah
+di-upload ke Repository Github dalam format file Comma Separated Value (.csv)
+"""
+
+df_dashboard = pd.read_csv("https://raw.githubusercontent.com/pramudianzaheka92/DicodingCourseOnlineCollection-Project/master/BikeSharingDatasetSubmission/Dashboard/main_data.csv")
+df_dashboard.tail(4) # Menampilkan 4 data terbawah dari DataFrame "df_dashboard"
 
 
-# Setelah melakukan proses load dataset yang pada notebook pertama telah dibersihkan serta data yang invalid telah ditransformasikan menjadi format data yang sesuai, maka selanjutnya saya akan berfokus dalam membuat dashboard visual sederhana menggunakan library streamlit berdasarkan tiga pertanyaan yang sudah saya jawab menggunakan grafik visual.
+# In[3]:
+
+
+# Menampilkan tipe data dari setiap atribut kolom yang tersimpan di dalam DataFrame "df_dashboard"
+df_dashboard.dtypes
+
+
+# In[4]:
+
+
+"""
+Mengubah tipe data pada atribut kolom "Rental_Date" dari yang semula
+memiliki tipe data Object/String menjadi tipe data Datetime
+"""
+df_dashboard["Rental_Date"] = pd.to_datetime(df_dashboard["Rental_Date"])
+df_dashboard.dtypes
+
+
+# Setelah melakukan proses load dataset yang pada notebook pertama telah dibersihkan serta data yang invalid telah ditransformasikan menjadi format data yang sesuai, maka selanjutnya saya akan berfokus dalam membuat dashboard visual sederhana menggunakan library streamlit berdasarkan tiga pertanyaan yang sudah saya jawab menggunakan grafik visual. Selain itu, sebelum melakukan proses pembuatan Aplikasi Dashboard Sederhana, saya juga melakukan kembali proses perubahan tipe data pada atribut kolom "Rental_Date" karena ternyata walaupun sudah diubah tipe datanya menjadi datetime di dalam notebook pertama, tetapi kenyataannya ketika di-export dan dataset hasil export tersebut di-load di dalam file notebook kali ini, tipe datanya tidak berubah menjadi datetime melainkan kembali ke Object. Untuk itu saya harus mengubahnya kembali menjadi tipe data Datetime khususnya hanya pada atribut kolom "Rental_Date".
 # 
 # Tahap pembuatan dashboard visual sederhana menggunakan streamlit akan terbagi menjadi 2 fokus utama yaitu membuat sidebar serta dan membuat isi konten menggunakan visualisasi-visualisasi yang sudah saya buat pada notebook pertama beserta analisisnya. Khusus untuk sidebar akan terdapat beberapa elemen utama dari basic widgets yang terdiri dari input widget yakni data filter dan button widgets yakni selectbox dan multi-select. Tetapi sebelum membuat struktur dashboard dengan Library Streamlit, saya akan membuat beberapa helper function untuk memudahkan proses pembuatan data visualisasi di dalam dashboard visual sederhana dengan Library Streamlit.
 
@@ -36,7 +60,7 @@ df_dashboard.tail(4)
 
 # Tujuan utama dari pembuatan helper function yang saya inisialisasikan ini adalah untuk digunakan sebagai visual cards yang akan menunjukkan jumlah nilai dari masing-masing atribut seperti jumlah pengguna yang terdaftar di dalam sistem dari Perusahaan GowesKuyy, jumlah pengguna yang tidak terdaftar di dalam sistem, dan lainnya.
 
-# In[3]:
+# In[5]:
 
 
 # Membuat sebuah fungsi yang bertujuan untuk menghitung jumlah data yang unik dari atribut kolom "Season" 
@@ -46,7 +70,7 @@ def unique_number_of_rental_day(df_dashboard):
     return data_unique_number_rental_day
 
 
-# In[4]:
+# In[6]:
 
 
 # Membuat sebuah fungsi yang bertujuan untuk menghitung jumlah data yang unik dari atribut kolom "Season" 
@@ -56,7 +80,7 @@ def count_of_season(df_dashboard):
     return count_of_season_four_categories
 
 
-# In[5]:
+# In[7]:
 
 
 # Menghitung jumlah total pengguna/peminjam sepeda yang tidak terdaftar di dalam sistem otomatis milik Perusahaan GowesKuyy
@@ -66,7 +90,7 @@ def create_total_casual_users(df_dashboard):
     return sum_of_total_casual_users
 
 
-# In[6]:
+# In[8]:
 
 
 # Menghitung jumlah total pengguna/peminjam sepeda yang terdaftar di dalam sistem otomatis milik Perusahaan GowesKuyy
@@ -76,7 +100,7 @@ def create_total_registered_users(df_dashboard):
     return sum_of_total_registered_users
 
 
-# In[7]:
+# In[9]:
 
 
 # Membuat sebuah fungsi yang bertujuan untuk menghitung jumlah total keseluruhan dari pengguna/peminjam sepeda,
@@ -93,7 +117,7 @@ def create_total_users(df_dashboard):
 
 # ### 4.1. Change Favicon and Title Website for Visual Dashboard App + Create Header Dashboard
 
-# In[8]:
+# In[10]:
 
 
 # Mengubah judul website yang akan kita buat beserta logo streamlit agar formatnya tidak default
@@ -113,7 +137,7 @@ st.header("Submission Dashboard Visuals Bike Sharing 🚲 📊")
 
 # #### 4.2.1. Layout Sidebar
 
-# In[9]:
+# In[11]:
 
 
 # Membuat sebuah fitur sidebar di dalam Streamlit Dashboard App untuk menampung data filter yang akan dibuat
@@ -153,7 +177,7 @@ with st.sidebar:
 # 
 # Adanya fitur filter yang diletakkan pada sidebar website dashboard visualisasi ini diharapkan agar dapat memudahkan user dan membuat dashboard yang saya buat menjadi lebih interaktif dan menyesuaikan keinginan user dalam menampilkan informasi yang ingin dilihatnya. Tetapi sejujurnya filter-filter tersebut masih belum dapat digunakan atau dengan kata lain fungsionalitas keempat filter tersebut masih belum berguna. Maka dari itu selanjutnya saya akan membuat sebuah query yang dimana keempat filter diatas dapat digunakan dan menyesuaikan informasi yang ingin ditampilkan oleh user.
 
-# In[10]:
+# In[12]:
 
 
 # Memanggil variabel-variabel filter yang telah diinisialisasikan sebelumnya untuk diterapkan kepada setiap grafik visualisasi
@@ -163,7 +187,7 @@ df_multi_filter_selection = df_dashboard.query(
 
 # Setelah berhasil memanggil keempat filter agar keempat filter yang telah dibuat di dalam sidebar dapat digunakan, selanjutnya saya akan mengimlementasikan tugas dari keempat filter tersebut ke dalam lima fungsi yang sudah saya buat pada tahapan "Pembuatan Helper Function". Hal ini supaya visual cards yang saya buat akan dipengaruhi oleh keempat filter yang sudah saya buat yaitu filter untuk tanggal peminjaman sepeda, filter untuk bulan peminjaman sepeda, filter untuk tahun peminjaman sepeda dan terakhir adalah filter berdasarkan musim/season dari setiap tahun dan bulannya.
 
-# In[11]:
+# In[13]:
 
 
 # Menjadikan kelima helper function yang akan menjadi visual cards dapat dipengaruhi oleh filter yang ada di dalam dashboard
@@ -186,7 +210,7 @@ sum_of_total_users = create_total_users(df_multi_filter_selection)
 # 4. Sama seperti pada visual card yang ketiga, visual card yang keempat ini juga bertujuan untuk menunjukkan jumlah total nilai pengguna sepeda namun yang membedakan adalah total nilai yang ditampilkan berasal dari pengguna/peminjam sepeda yang terdaftar di dalam sistem otomatis milik Perusahaan GowesKuyy (pengguna registered).
 # 5. Visual card yang terakhir berfungsi untuk menunjukkan jumlah total nilai keseluruhan dari masing-masing pengguna/peminjam sepeda, baik pengguna yang terdaftar (pengguna registered) maupun pengguna yang tidak terdaftar di dalam sistem otomatis Perusahaan GowesKuyy (pengguna casual).
 
-# In[12]:
+# In[14]:
 
 
 # Membuat sebuah fitur layout column untuk menunjukkan jumlah total nilai berdasarkan atribut yang sudah dibuat pada helper function
@@ -226,7 +250,7 @@ st.dataframe(df_multi_filter_selection)
 
 # #### 4.3. Layouts Tabs
 
-# In[13]:
+# In[15]:
 
 
 # Membuat struktur desain layout untuk ketiga pertanyaan analisis yang di mana masing-masing grafik
