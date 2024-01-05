@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 import streamlit as st
 plt.style.use("ggplot")
 
-
 # ## 2. Load Dataset "main_data.xlsx"
 
 # In[2]:
